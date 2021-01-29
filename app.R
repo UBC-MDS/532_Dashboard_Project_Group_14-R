@@ -42,18 +42,37 @@ app$layout(
                                 options = purrr::map(unique(df$Department), function(value) list(label = value, value = value)),
                                 value = 'Sales',
                                 placeholder = 'Select a Department'
+                            ),
+                            htmlBr(),
+                            dbcLabel("Age"),
+                            dccRangeSlider(
+                                id = "age-widget",
+                                min = 18,
+                                max = 60,
+                                step = 1,
+                                marks = list(
+                                    "18" = "18",
+                                    "25" = "25",
+                                    "45" = "45",
+                                    "60" = "60"
+                                ),
+                            value = list(18, 45)
                             )
                         )),
                     dbcCol(
                         #id = 'plots',
-                        md = 7,
+                        md = 8,
                         list(
                             htmlBr(),
                             #dbcLabel("Monthly Income"),
                             dccGraph(id = 'plots')
-                        ))
+                        ), style = list('max-width' = '200%', 'height' = '800px')
+                        )
 
-                ))), style = list('max-width' = '85%', 'max-height' = '100%')
+
+                ), style = list('max-width' = '300%', 'max-height' = '300%')
+                )
+            ), style = list('max-width' = '200%', 'max-height' = '200%')
         )
     )# Change left/right whitespace for the container
 
@@ -61,10 +80,15 @@ app$callback(
     output('plots', 'figure'),
     list(
         input('gender-widget', 'value'),
-        input('depart-widget', 'value')
+        input('depart-widget', 'value'),
+        input('age-widget', 'value')
     ),
-    function(gender='Female', depart='Sales') {
-        data <- filter(df, Department %in% depart & Gender %in% gender)
+    function(gender='Female', depart='Sales', age=18) {
+        data <- filter(df,
+                       Department %in% depart
+                            & Gender %in% gender
+                            & Age > age[1]
+                            & Age < age[2])
         chart_income <- ggplot(data) +
             aes(x = Attrition,
                 y = MonthlyIncome,
@@ -96,12 +120,12 @@ app$callback(
             scale_y_continuous(labels = scales::percent) +
             coord_flip() +
             labs(y = "Proportion (%)", x = '', title = 'Environment Satisfaction') +
-            theme_bw() +
+            theme_minimal(base_size = 12) +
             theme(
               legend.position = 'none',
               plot.title = element_text(hjust = 0.5))
-        
-        subplot(ggplotly(chart_income),
+
+        subplot(ggplotly(chart_env),
                 ggplotly(chart_env),
                 ggplotly(chart_income),
                 ggplotly(chart_income),

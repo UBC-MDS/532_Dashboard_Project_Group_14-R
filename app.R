@@ -5,6 +5,7 @@ library(dashBootstrapComponents)
 library(ggplot2)
 library(plotly)
 library(cowplot)
+library(dplyr)
 library(ggthemes)
 
 df = read.csv("data/Processed/HR_employee_Attrition_editted_processed.csv")
@@ -52,7 +53,7 @@ app$layout(
                             dccGraph(id = 'plots')
                         ))
 
-                ))), style = list('max-width' = '85%', 'max-height' = '85%')
+                ))), style = list('max-width' = '85%', 'max-height' = '100%')
         )
     )# Change left/right whitespace for the container
 
@@ -87,13 +88,26 @@ app$callback(
 
         # plot2 <- ggplotly(chart_travel) %>% layout(dragmode = 'select')
 
+        chart_env <- data %>%
+          group_by(EnvironmentSatisfaction, Attrition) %>%
+          summarise('Proportion' = n()) %>%
+          ggplot(aes(x = EnvironmentSatisfaction, y = Proportion, fill = Attrition)) +
+            geom_bar(position = "fill", stat = "identity") +
+            scale_y_continuous(labels = scales::percent) +
+            coord_flip() +
+            labs(y = "Proportion (%)", x = '', title = 'Environment Satisfaction') +
+            theme_bw() +
+            theme(
+              legend.position = 'none',
+              plot.title = element_text(hjust = 0.5))
+        
         subplot(ggplotly(chart_income),
-                ggplotly(chart_income),
+                ggplotly(chart_env),
                 ggplotly(chart_income),
                 ggplotly(chart_income),
                 nrows = 2,
-                margin = 0.02,
-                shareY = TRUE
+                margin = 0.1,
+                shareY = FALSE
                 ) %>% layout(dragmode = 'select')
         # ggplotly(plot_sum) %>% layout(dragmode = 'select')
     }

@@ -8,6 +8,8 @@ library(cowplot)
 library(dplyr)
 library(ggthemes)
 
+
+#test2
 #df = read.csv("data/Processed/HR_employee_Attrition_editted_processed.csv")
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
@@ -66,7 +68,6 @@ app$layout(
                         md = 8,
                         list(
                             htmlBr(),
-                            #dbcLabel("Monthly Income"),
                             dccGraph(id = 'plots')
                         ), style = list('max-width' = '200%', 'height' = '800px')
                         )
@@ -91,48 +92,70 @@ app$callback(
                             & Gender %in% gender
                             & Age > age[1]
                             & Age < age[2])
-        chart_income <- ggplot(data) +
+        
+        chart_income <- data %>%
+            mutate('title' = 'Monthly Income') %>%
+            ggplot() +
             aes(x = Attrition,
                 y = MonthlyIncome,
                 fill = Attrition) +
             geom_boxplot(varwidth = TRUE) +
             theme_minimal(base_size = 12) +
-            labs(y = 'Monthly Income', title = 'Monthly Income Distribution') +
+            facet_wrap(~title) +
+            # ggtitle("test") +
+            # labs(y = 'Monthly Income', title = 'Monthly Income Distribution') +
             scale_y_continuous(labels = scales::label_dollar()) +
             coord_flip() +
             ggthemes::scale_color_tableau() +
             theme(legend.position = 'none')
         
+        chart_work <- data %>% 
+            group_by(WorkLifeBalance, Attrition) %>%
+            summarise('Proportion' = n()) %>%
+            mutate('title' = 'WorkLife Balance') %>%
+            ggplot(aes(x = WorkLifeBalance, y = Proportion, fill = Attrition)) +
+            geom_bar(position = "fill", stat = "identity") +
+            scale_y_continuous(labels = scales::percent) +
+            coord_flip() +
+            labs(y = "Proportion (%)", x = '') +
+            theme_minimal(base_size = 12) +
+            theme(
+                legend.position = 'none',
+                plot.title = element_text(hjust = 0.5))
+        
         chart_tra <- data %>%
             group_by(BusinessTravel, Attrition) %>%
             summarise('Proportion' = n()) %>%
+            mutate('title' = 'Frequency of Business Travel') %>%
             ggplot(aes(x = BusinessTravel, y = Proportion, fill = Attrition)) +
             geom_bar(position = "fill", stat = "identity") +
             scale_y_continuous(labels = scales::percent) +
             coord_flip() +
-            labs(y = "Proportion (%)", x = '', title = 'Business Travel Frequency') +
+            labs(y = "Proportion (%)", x = 'Business Travel Frequency') +
+            #ggtitle('Business Travel Frequency') +
             theme_minimal(base_size = 12) +
             theme(
                 legend.position = 'none',
                 plot.title = element_text(hjust = 0.5))
 
         chart_env <- data %>%
-          group_by(EnvironmentSatisfaction, Attrition) %>%
-          summarise('Proportion' = n()) %>%
-          ggplot(aes(x = EnvironmentSatisfaction, y = Proportion, fill = Attrition)) +
+            group_by(EnvironmentSatisfaction, Attrition) %>%
+            summarise('Proportion' = n()) %>%
+            mutate('title' = 'Environment Satisfaction') %>%
+            ggplot(aes(x = EnvironmentSatisfaction, y = Proportion, fill = Attrition)) +
             geom_bar(position = "fill", stat = "identity") +
             scale_y_continuous(labels = scales::percent) +
+            facet_wrap(~title) +
             coord_flip() +
-            labs(y = "Proportion (%)", x = '', title = 'Environment Satisfaction') +
             theme_minimal(base_size = 12) +
-            theme(
-              legend.position = 'none',
-              plot.title = element_text(hjust = 0.5))
+            ggthemes::scale_color_tableau() +
+            theme(legend.position = 'none')
+        
 
         subplot(ggplotly(chart_income),
+                ggplotly(chart_work),
                 ggplotly(chart_env),
                 ggplotly(chart_tra),
-                ggplotly(chart_income),
                 nrows = 2,
                 margin = 0.1,
                 shareY = FALSE

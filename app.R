@@ -8,11 +8,11 @@ library(cowplot)
 library(dplyr)
 library(ggthemes)
 
-df = read.csv("data/Processed/HR_employee_Attrition_editted_processed.csv")
+#df = read.csv("data/Processed/HR_employee_Attrition_editted_processed.csv")
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 
-df <- readr::read_csv(here::here('data/Processed', 'HR_employee_Attrition_editted_processed.csv'))
+df <- readr::read_csv(here::here('data', 'Processed', "HR_employee_Attrition_editted_processed.csv"))
 
 app$layout(
     dbcContainer(
@@ -40,8 +40,10 @@ app$layout(
                             dccDropdown(
                                 id = "depart-widget",
                                 options = purrr::map(unique(df$Department), function(value) list(label = value, value = value)),
-                                value = 'Sales',
-                                placeholder = 'Select a Department'
+                                value = "Sales",
+                                    #c(unique(df$Department)),
+                                placeholder = 'Select a Department',
+                                #multi = TRUE
                             ),
                             htmlBr(),
                             dbcLabel("Age"),
@@ -100,17 +102,19 @@ app$callback(
             coord_flip() +
             ggthemes::scale_color_tableau() +
             theme(legend.position = 'none')
-
-        # plot1 <- ggplotly(chart_income) %>% layout(dragmode = 'select')
-
-        # chart_travel <- data %>%
-        #     ggplot(aes(x = BusinessTravel, y = n, fill = Attrition)) +
-        #     geom_bar(position = "fill", stat = "identity") +
-        #     geom_col(stat = "identity", position = "fill") +
-        #     labs(title = 'Business Travel Frequency')
-
-
-        # plot2 <- ggplotly(chart_travel) %>% layout(dragmode = 'select')
+        
+        chart_tra <- data %>%
+            group_by(BusinessTravel, Attrition) %>%
+            summarise('Proportion' = n()) %>%
+            ggplot(aes(x = BusinessTravel, y = Proportion, fill = Attrition)) +
+            geom_bar(position = "fill", stat = "identity") +
+            scale_y_continuous(labels = scales::percent) +
+            coord_flip() +
+            labs(y = "Proportion (%)", x = '', title = 'Business Travel Frequency') +
+            theme_minimal(base_size = 12) +
+            theme(
+                legend.position = 'none',
+                plot.title = element_text(hjust = 0.5))
 
         chart_env <- data %>%
           group_by(EnvironmentSatisfaction, Attrition) %>%
@@ -125,9 +129,9 @@ app$callback(
               legend.position = 'none',
               plot.title = element_text(hjust = 0.5))
 
-        subplot(ggplotly(chart_env),
+        subplot(ggplotly(chart_income),
                 ggplotly(chart_env),
-                ggplotly(chart_income),
+                ggplotly(chart_tra),
                 ggplotly(chart_income),
                 nrows = 2,
                 margin = 0.1,

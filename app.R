@@ -119,6 +119,7 @@ app$callback(output('plots', 'figure'),
                      geom_boxplot(varwidth = TRUE) +
                      theme_minimal(base_size = 12) +
                      facet_wrap(  ~  title) +
+                     scale_fill_manual(values=c("#00BFC4", "#F8766D")) +
                      # ggtitle("test") +
                      # labs(y = 'Monthly Income', title = 'Monthly Income Distribution') +
                      scale_y_continuous(labels = scales::label_dollar()) +
@@ -137,6 +138,8 @@ app$callback(output('plots', 'figure'),
                      )) +
                      geom_bar(position = "fill", stat = "identity") +
                      scale_y_continuous(labels = scales::percent) +
+                     scale_fill_manual(values=c("#00BFC4", "#F8766D")) +
+                     facet_wrap(  ~  title) +
                      coord_flip() +
                      labs(y = "Proportion (%)", x = '') +
                      theme_minimal(base_size = 12) +
@@ -154,6 +157,8 @@ app$callback(output('plots', 'figure'),
                      )) +
                      geom_bar(position = "fill", stat = "identity") +
                      scale_y_continuous(labels = scales::percent) +
+                     scale_fill_manual(values=c("#00BFC4", "#F8766D")) +
+                     facet_wrap(  ~  title) +
                      coord_flip() +
                      labs(y = "Proportion (%)", x = 'Business Travel Frequency') +
                      #ggtitle('Business Travel Frequency') +
@@ -172,6 +177,7 @@ app$callback(output('plots', 'figure'),
                      ) +
                      geom_bar(position = "fill", stat = "identity") +
                      scale_y_continuous(labels = scales::percent) +
+                     scale_fill_manual(values=c("#00BFC4", "#F8766D")) +
                      facet_wrap( ~ title) +
                      coord_flip() +
                      theme_minimal(base_size = 12) +

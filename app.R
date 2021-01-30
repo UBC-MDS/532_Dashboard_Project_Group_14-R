@@ -8,110 +8,188 @@ library(cowplot)
 library(dplyr)
 library(ggthemes)
 
-df = read.csv("data/Processed/HR_employee_Attrition_editted_processed.csv")
+
+#test2
+#df = read.csv("data/Processed/HR_employee_Attrition_editted_processed.csv")
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 
-df <- readr::read_csv(here::here('data/Processed', 'HR_employee_Attrition_editted_processed.csv'))
+df <-
+    readr::read_csv(here::here(
+        'data',
+        'Processed',
+        "HR_employee_Attrition_editted_processed.csv"
+    ))
 
-app$layout(
-    dbcContainer(
-        list(
-            htmlH1("Key Factors for Employee Attrition Dashboard"),
-            dbcRow(
-                list(
-                    dbcCol(
-                        id = 'widgets',
-                        md = 3,
-                        list(
-                            htmlBr(),
-                            dbcLabel("Gender"),
-                            dccDropdown(
-                                id = 'gender-widget',
-                                options =  list(list(label = "Male", value = "Male"),
-                                                list(label = "Female", value = "Female")),
-                                value = c('Female', "Male"),
-                                placeholder = 'Select Gender',
-                                multi = TRUE
-
-                            ),
-                            htmlBr(),
-                            dbcLabel("Department"),
-                            dccDropdown(
-                                id = "depart-widget",
-                                options = purrr::map(unique(df$Department), function(value) list(label = value, value = value)),
-                                value = 'Sales',
-                                placeholder = 'Select a Department'
-                            )
-                        )),
-                    dbcCol(
-                        #id = 'plots',
-                        md = 7,
-                        list(
-                            htmlBr(),
-                            #dbcLabel("Monthly Income"),
-                            dccGraph(id = 'plots')
-                        ))
-
-                ))), style = list('max-width' = '85%', 'max-height' = '100%')
-        )
-    )# Change left/right whitespace for the container
-
-app$callback(
-    output('plots', 'figure'),
+app$layout(dbcContainer(
     list(
-        input('gender-widget', 'value'),
-        input('depart-widget', 'value')
+        htmlH1("Key Factors for Employee Attrition Dashboard"),
+        dbcRow(
+            list(
+                dbcCol(
+                    id = 'widgets',
+                    md = 3,
+                    list(
+                        htmlBr(),
+                        dbcLabel("Gender"),
+                        dccDropdown(
+                            id = 'gender-widget',
+                            options =  list(
+                                list(label = "Male", value = "Male"),
+                                list(label = "Female", value = "Female")
+                            ),
+                            value = c('Female', "Male"),
+                            placeholder = 'Select Gender',
+                            multi = TRUE
+
+                        ),
+                        htmlBr(),
+                        dbcLabel("Department"),
+                        dccDropdown(
+                            id = "depart-widget",
+                            options = purrr::map(unique(df$Department), function(value)
+                                list(label = value, value = value)),
+                            value = "Sales",
+                            #c(unique(df$Department)),
+                            placeholder = 'Select a Department',
+                            #multi = TRUE
+                        ),
+                        htmlBr(),
+                        dbcLabel("Age"),
+                        dccRangeSlider(
+                            id = "age-widget",
+                            min = 18,
+                            max = 60,
+                            step = 1,
+                            marks = list(
+                                "18" = "18",
+                                "25" = "25",
+                                "45" = "45",
+                                "60" = "60"
+                            ),
+                            value = list(18, 45)
+                        )
+                    )
+                ),
+                dbcCol(
+                    #id = 'plots',
+                    md = 8,
+                    list(htmlBr(),
+                         dccGraph(id = 'plots')),
+                    style = list('max-width' = '200%', 'height' = '800px')
+                )
+
+
+            ),
+            style = list('max-width' = '300%', 'max-height' = '300%')
+        )
     ),
-    function(gender='Female', depart='Sales') {
-        data <- filter(df, Department %in% depart & Gender %in% gender)
-        chart_income <- ggplot(data) +
-            aes(x = Attrition,
-                y = MonthlyIncome,
-                fill = Attrition) +
-            geom_boxplot(varwidth = TRUE) +
-            theme_minimal(base_size = 12) +
-            labs(y = 'Monthly Income', title = 'Monthly Income Distribution') +
-            scale_y_continuous(labels = scales::label_dollar()) +
-            coord_flip() +
-            ggthemes::scale_color_tableau() +
-            theme(legend.position = 'none')
+    style = list('max-width' = '200%', 'max-height' = '200%')
+))
 
-        # plot1 <- ggplotly(chart_income) %>% layout(dragmode = 'select')
+app$callback(output('plots', 'figure'),
+             list(
+                 input('gender-widget', 'value'),
+                 input('depart-widget', 'value'),
+                 input('age-widget', 'value')
+             ),
+             function(gender = 'Female',
+                      depart = 'Sales',
+                      age = 18) {
+                 data <- df %>%
+                     filter(if (is.null(gender))
+                         (
+                             Department %in% depart
+                             & Gender %in% gender
+                             & Age > age[1]
+                             & Age < age[2]
+                         )
+                         else
+                             (Department %in% depart
+                              & Age > age[1]
+                              & Age < age[2])
+                     )
 
-        # chart_travel <- data %>%
-        #     ggplot(aes(x = BusinessTravel, y = n, fill = Attrition)) +
-        #     geom_bar(position = "fill", stat = "identity") +
-        #     geom_col(stat = "identity", position = "fill") +
-        #     labs(title = 'Business Travel Frequency')
+                 chart_income <- data %>%
+                     mutate('title' = 'Monthly Income') %>%
+                     ggplot() +
+                     aes(x = Attrition,
+                         y = MonthlyIncome,
+                         fill = Attrition) +
+                     geom_boxplot(varwidth = TRUE) +
+                     theme_minimal(base_size = 12) +
+                     facet_wrap(  ~  title) +
+                     # ggtitle("test") +
+                     # labs(y = 'Monthly Income', title = 'Monthly Income Distribution') +
+                     scale_y_continuous(labels = scales::label_dollar()) +
+                     coord_flip() +
+                     ggthemes::scale_color_tableau() +
+                     theme(legend.position = 'none')
+
+                 chart_work <- data %>%
+                     group_by(WorkLifeBalance, Attrition) %>%
+                     summarise('Proportion' = n()) %>%
+                     mutate('title' = 'WorkLife Balance') %>%
+                     ggplot(aes(
+                         x = WorkLifeBalance,
+                         y = Proportion,
+                         fill = Attrition
+                     )) +
+                     geom_bar(position = "fill", stat = "identity") +
+                     scale_y_continuous(labels = scales::percent) +
+                     coord_flip() +
+                     labs(y = "Proportion (%)", x = '') +
+                     theme_minimal(base_size = 12) +
+                     theme(
+                         legend.position = 'none',
+                         plot.title = element_text(hjust = 0.5)
+                     )
+
+                 chart_tra <- data %>%
+                     group_by(BusinessTravel, Attrition) %>%
+                     summarise('Proportion' = n()) %>%
+                     mutate('title' = 'Frequency of Business Travel') %>%
+                     ggplot(aes(
+                         x = BusinessTravel, y = Proportion, fill = Attrition
+                     )) +
+                     geom_bar(position = "fill", stat = "identity") +
+                     scale_y_continuous(labels = scales::percent) +
+                     coord_flip() +
+                     labs(y = "Proportion (%)", x = 'Business Travel Frequency') +
+                     #ggtitle('Business Travel Frequency') +
+                     theme_minimal(base_size = 12) +
+                     theme(
+                         legend.position = 'none',
+                         plot.title = element_text(hjust = 0.5)
+                     )
+
+                 chart_env <- data %>%
+                     group_by(EnvironmentSatisfaction, Attrition) %>%
+                     summarise('Proportion' = n()) %>%
+                     mutate('title' = 'Environment Satisfaction') %>%
+                     ggplot(
+                         aes(x = EnvironmentSatisfaction, y = Proportion, fill = Attrition)
+                     ) +
+                     geom_bar(position = "fill", stat = "identity") +
+                     scale_y_continuous(labels = scales::percent) +
+                     facet_wrap( ~ title) +
+                     coord_flip() +
+                     theme_minimal(base_size = 12) +
+                     ggthemes::scale_color_tableau() +
+                     theme(legend.position = 'none')
 
 
-        # plot2 <- ggplotly(chart_travel) %>% layout(dragmode = 'select')
-
-        chart_env <- data %>%
-          group_by(EnvironmentSatisfaction, Attrition) %>%
-          summarise('Proportion' = n()) %>%
-          ggplot(aes(x = EnvironmentSatisfaction, y = Proportion, fill = Attrition)) +
-            geom_bar(position = "fill", stat = "identity") +
-            scale_y_continuous(labels = scales::percent) +
-            coord_flip() +
-            labs(y = "Proportion (%)", x = '', title = 'Environment Satisfaction') +
-            theme_bw() +
-            theme(
-              legend.position = 'none',
-              plot.title = element_text(hjust = 0.5))
-        
-        subplot(ggplotly(chart_income),
-                ggplotly(chart_env),
-                ggplotly(chart_income),
-                ggplotly(chart_income),
-                nrows = 2,
-                margin = 0.1,
-                shareY = FALSE
-                ) %>% layout(dragmode = 'select')
-        # ggplotly(plot_sum) %>% layout(dragmode = 'select')
-    }
-)
+                 subplot(
+                     ggplotly(chart_income),
+                     ggplotly(chart_work),
+                     ggplotly(chart_env),
+                     ggplotly(chart_tra),
+                     nrows = 2,
+                     margin = 0.1,
+                     shareY = FALSE
+                 ) %>% layout(dragmode = 'select')
+                 # ggplotly(plot_sum) %>% layout(dragmode = 'select')
+             })
 
 
 app$run_server(debug = T)

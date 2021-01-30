@@ -68,7 +68,6 @@ app$layout(
                         md = 8,
                         list(
                             htmlBr(),
-                            #dbcLabel("Monthly Income"),
                             dccGraph(id = 'plots')
                         ), style = list('max-width' = '200%', 'height' = '800px')
                         )
@@ -144,5 +143,5 @@ app$callback(
 )
 
 
-app$run_server(debug = T)
-#app$run_server(host = '0.0.0.0')
+#app$run_server(debug = F)
+app$run_server(host = '0.0.0.0')

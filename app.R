@@ -8,6 +8,8 @@ library(cowplot)
 library(dplyr)
 library(ggthemes)
 
+
+#test2
 #df = read.csv("data/Processed/HR_employee_Attrition_editted_processed.csv")
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)

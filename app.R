@@ -75,8 +75,8 @@ app$layout(dbcContainer(
                     id = 'plots blcok',
                     md = 8,
                     list(htmlBr(),
-                         htmlH6("Attritued", style = list('color'="#F8766D", fontsize = 10), title = "Legend"),
-                         htmlH6("Not Attritued", style = list('color'="#00BFC4", fontsize = 10),  title = "Legend"),
+                         htmlH6("Attrition", style = list('color'="#F8766D", fontsize = 10), title = "Legend"),
+                         htmlH6("No Attrition", style = list('color'="#00BFC4", fontsize = 10),  title = "Legend"),
                          dccGraph(id = 'plots')),
                     style = list('max-width' = '200%', 'height' = '800px'),
 

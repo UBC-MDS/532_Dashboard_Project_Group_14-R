@@ -3,6 +3,8 @@
 
 # Key Factors for Employee Attrition Dashboard
 
+## Dashboard App Deployment - Prototype with R
+[Key Factors for Employee Attrition Dashboard - R](https://g14-r2.herokuapp.com/)
 
 ## Welcome!
 Welcome to our dashboard! 
@@ -34,5 +36,3 @@ App sketch
 
 <!-- #endregion -->
 
-## Dashboard App Deployment - Prototype with R
-[Key Factors for Employee Attrition Dashboard - R](https://g14-r2.herokuapp.com/)

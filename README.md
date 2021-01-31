@@ -34,5 +34,5 @@ App sketch
 
 <!-- #endregion -->
 
-## Dashboard App Deployment - Prototype
-[Key Factors for Employee Attrition](https://dsci532-grou14-appv1-1.herokuapp.com/)
+## Dashboard App Deployment - Prototype with R
+[Key Factors for Employee Attrition Dashboard](https://g14-r2.herokuapp.com/)

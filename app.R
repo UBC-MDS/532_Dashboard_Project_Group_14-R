@@ -38,9 +38,9 @@ app$layout(dbcContainer(
                                 list(label = "Male", value = "Male"),
                                 list(label = "Female", value = "Female")
                             ),
-                            value = c('Female', "Male"),
-                            placeholder = 'Select Gender',
-                            multi = TRUE
+                            value = "Female", # c('Female', "Male"),
+                            placeholder = 'Select Gender'
+                            #multi = TRUE
 
                         ),
                         htmlBr(),
@@ -51,7 +51,7 @@ app$layout(dbcContainer(
                                 list(label = value, value = value)),
                             value = "Sales",
                             #c(unique(df$Department)),
-                            placeholder = 'Select a Department',
+                            placeholder = 'Select a Department'
                             #multi = TRUE
                         ),
                         htmlBr(),
@@ -72,11 +72,14 @@ app$layout(dbcContainer(
                     )
                 ),
                 dbcCol(
-                    #id = 'plots',
+                    id = 'plots blcok',
                     md = 8,
                     list(htmlBr(),
+                         htmlH6("Attritued", style = list('color'="#F8766D", fontsize = 10), title = "Legend"),
+                         htmlH6("Not Attritued", style = list('color'="#00BFC4", fontsize = 10),  title = "Legend"),
                          dccGraph(id = 'plots')),
-                    style = list('max-width' = '200%', 'height' = '800px')
+                    style = list('max-width' = '200%', 'height' = '800px'),
+
                 )
 
 
@@ -93,22 +96,31 @@ app$callback(output('plots', 'figure'),
                  input('depart-widget', 'value'),
                  input('age-widget', 'value')
              ),
-             function(gender = 'Female',
-                      depart = 'Sales',
-                      age = 18) {
+             function(gender, #= 'Female',
+                      depart, # = 'Sales',
+                      age) { # = 18) {
+                 
                  data <- df %>%
-                     filter(if (is.null(gender))
-                         (
+                     filter(
                              Department %in% depart
-                             & Gender %in% gender
-                             & Age > age[1]
-                             & Age < age[2]
-                         )
-                         else
-                             (Department %in% depart
+                              & Gender %in% gender
                               & Age > age[1]
-                              & Age < age[2])
+                              & Age < age[2]
                      )
+                 
+                 # data <- df %>%
+                 #     filter(if (is.null(gender))
+                 #         (
+                 #             Department %in% depart
+                 #             & Age > age[1]
+                 #             & Age < age[2]
+                 #         )
+                 #         else
+                 #             (Department %in% depart
+                 #              & Gender %in% gender
+                 #              & Age > age[1]
+                 #              & Age < age[2])
+                 #     )
 
                  chart_income <- data %>%
                      mutate('title' = 'Monthly Income') %>%

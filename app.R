@@ -9,7 +9,7 @@ library(dplyr)
 library(ggthemes)
 
 
-#test pipeline and review
+#test pipeline and review v2
 #df = read.csv("data/Processed/HR_employee_Attrition_editted_processed.csv")
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
